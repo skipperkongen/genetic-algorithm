@@ -9,17 +9,18 @@ class GeneticAlgorithm:
 
     def __init__(self,
                  fitness_function,
-                 n_genes,
-                 gene_lb=0,
-                 gene_ub=1,
                  mutate=F.default_mutate,
                  cross=F.default_cross,
-                 pop_size=100,
+                 n_genes=None,
+                 gene_lb=None,
+                 gene_ub=None,
+                 pop_size=None,
                  n_survivors=20,
                  max_generations=100,
                  mutate_ratio=0.1,
                  cross_ratio=0.1,
-                 epsilon=0.0):
+                 epsilon=0.0,
+                 dtype=float):
 
         self.fitness_function = fitness_function
         self.n_genes = n_genes
@@ -32,22 +33,29 @@ class GeneticAlgorithm:
         self.mutate_ratio = mutate_ratio
         self.cross_ratio = cross_ratio
         self.epsilon = epsilon
+        self.dtype = dtype
 
     def _init_pop(self, seed_pop):
         if seed_pop is None:
             # create random population
+            assert self.gene_lb is not None
+            assert self.gene_ub is not None
+            assert self.n_genes is not None
+            assert self.pop_size is not None
             pop = np.random.uniform(
                 low=self.gene_lb,
                 high=self.gene_ub,
                 size=(self.pop_size, self.n_genes))
         else:
+            assert self.pop_size is None
             pop = np.array(seed_pop)
+            self.dtype = seed_pop.dtype
             self.pop_size = pop.shape[0]
             self.n_genes = pop.shape[1]
         assert pop.shape == (self.pop_size, self.n_genes)
         assert pop.ravel().min() >= self.gene_lb
         assert pop.ravel().max() <= self.gene_ub
-        return pop
+        return pop.astype(self.dtype)
 
 
     def solve(self, seed_pop=None):
